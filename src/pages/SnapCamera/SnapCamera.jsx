@@ -1,6 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { bootstrapCameraKit, CameraKitSession, createMediaStreamSource, Transform2D, Lens  } from "@snap/camera-kit";
-import './SnapCamera.css';
+import React, { useEffect, useRef } from "react";
+import {
+  bootstrapCameraKit,
+  CameraKitSession,
+  createMediaStreamSource,
+  Transform2D,
+  Lens,
+} from "@snap/camera-kit";
+import "./SnapCamera.css";
 let mediaStream;
 
 const SnapCamera = () => {
@@ -13,7 +19,7 @@ const SnapCamera = () => {
   useEffect(() => {
     const init = async () => {
       const cameraKit = await bootstrapCameraKit({ apiToken: apiToken });
-      
+
       const session = await cameraKit.createSession();
 
       // Use the ref to get the canvas element
@@ -21,13 +27,15 @@ const SnapCamera = () => {
       if (canvas) {
         canvas.replaceWith(session.output.live);
       }
-      const { lenses } = await cameraKit.lenses.repository.loadLensGroups([lensGroupId]);
-      session.applyLens(lenses[19]);
+      const { lenses } = await cameraKit.lenses.repository.loadLensGroups([
+        lensGroupId,
+      ]);
+      session.applyLens(lenses[0]);
       await setCameraKitSource(session);
       await attachCamerasToSelect(session);
-      console.log('attachCamerasToSelect is called');
+      console.log("attachCamerasToSelect is called");
       await attachLensesToSelect(lenses, session);
-      console.log('attachLensesToSelect is called');
+      console.log("attachLensesToSelect is called");
     };
 
     init();
@@ -39,7 +47,9 @@ const SnapCamera = () => {
       mediaStream.getVideoTracks()[0].stop();
     }
 
-    mediaStream = await navigator.mediaDevices.getUserMedia({ video: { deviceId } });
+    mediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId },
+    });
 
     const source = createMediaStreamSource(mediaStream);
 
@@ -51,33 +61,33 @@ const SnapCamera = () => {
   };
 
   const attachCamerasToSelect = async (session) => {
-    cameraSelectRef.current.innerHTML = '';
+    cameraSelectRef.current.innerHTML = "";
     const devices = await navigator.mediaDevices.enumerateDevices();
-    const cameras = devices.filter(({ kind }) => kind === 'videoinput');
+    const cameras = devices.filter(({ kind }) => kind === "videoinput");
 
     cameras.forEach((camera) => {
-      const option = document.createElement('option');
+      const option = document.createElement("option");
       option.value = camera.deviceId;
       option.text = camera.label;
       cameraSelectRef.current.appendChild(option);
     });
 
-    cameraSelectRef.current.addEventListener('change', (event) => {
+    cameraSelectRef.current.addEventListener("change", (event) => {
       const deviceId = event.target.selectedOptions[0].value;
       setCameraKitSource(session, deviceId);
     });
   };
 
   const attachLensesToSelect = async (lenses, session) => {
-    lensSelectRef.current.innerHTML = '';
+    lensSelectRef.current.innerHTML = "";
     lenses.forEach((lens) => {
-      const option = document.createElement('option');
+      const option = document.createElement("option");
       option.value = lens.id;
       option.text = lens.name;
       lensSelectRef.current.appendChild(option);
     });
 
-    lensSelectRef.current.addEventListener('change', (event) => {
+    lensSelectRef.current.addEventListener("change", (event) => {
       const lensId = event.target.selectedOptions[0].value;
       const lens = lenses.find((lens) => lens.id === lensId);
       if (lens) session.applyLens(lens);
@@ -86,7 +96,12 @@ const SnapCamera = () => {
 
   return (
     <div className="container">
-      <canvas ref={canvasRef} id="canvas-container" width="1920" height="1080"></canvas>
+      <canvas
+        ref={canvasRef}
+        id="canvas-container"
+        width="1920"
+        height="1080"
+      ></canvas>
       <div className="footer">
         <select ref={cameraSelectRef} className="styled-select"></select>
         <select ref={lensSelectRef} className="styled-select"></select>
